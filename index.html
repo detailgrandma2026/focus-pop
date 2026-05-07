@@ -1,0 +1,344 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Focus Pop - Firefly Hunt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a4d2a, #0d2e1a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Quicksand', system-ui, -apple-system, sans-serif;
+            padding: 16px;
+        }
+
+
+        .game-container {
+            background: rgba(0,0,0,0.2);
+            border-radius: 48px;
+            padding: 20px;
+            backdrop-filter: blur(2px);
+        }
+
+
+        .game-panel {
+            background: #2a6e3f;
+            border-radius: 32px;
+            padding: 20px;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.4);
+            border: 1px solid #ffec9f88;
+        }
+
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: #1e3b2a;
+            padding: 12px 20px;
+            border-radius: 60px;
+            color: #f9e7b3;
+            font-weight: bold;
+        }
+
+
+        .score-box, .goal-box {
+            background: #0f281b;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 1.5rem;
+            box-shadow: inset 0 1px 3px #00000033, 0 2px 3px #ffffff22;
+        }
+
+
+        .score-box span, .goal-box span {
+            font-size: 0.9rem;
+            margin-right: 8px;
+        }
+
+
+        .game-area {
+            position: relative;
+            background: #1f4d2e;
+            background-image: radial-gradient(circle at 10% 20%, #2b6e3f 2%, transparent 2.5%);
+            background-size: 28px 28px;
+            width: min(85vw, 85vh, 500px);
+            height: min(85vw, 85vh, 500px);
+            border-radius: 28px;
+            overflow: hidden;
+            cursor: crosshair;
+            box-shadow: inset 0 0 0 3px #ffec9f, 0 10px 20px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+
+        .firefly {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #fdffb9, #ffd966);
+            border-radius: 50%;
+            box-shadow: 0 0 15px 6px #ffea80, 0 0 5px 2px #ffb347;
+            cursor: pointer;
+            transition: transform 0.05s ease;
+            will-change: left, top;
+        }
+
+
+        .firefly:active {
+            transform: scale(0.85);
+        }
+
+
+        .message-area {
+            text-align: center;
+            margin-top: 12px;
+        }
+
+
+        #winMessage {
+            background: #ffd966cc;
+            backdrop-filter: blur(8px);
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #2c4b1e;
+        }
+
+
+        button {
+            background: #ffcf4a;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2d4a1c;
+            margin-top: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #b46f1a;
+            transition: 0.05s linear;
+        }
+
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #b46f1a;
+        }
+
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="game-panel">
+        <div class="stats">
+            <div class="score-box"><span>✨</span> <span id="score">0</span></div>
+            <div class="goal-box"><span>🎯</span> 0 / <span id="goal">10</span></div>
+        </div>
+        <div id="gameArea" class="game-area">
+            <div id="firefly" class="firefly"></div>
+        </div>
+        <div class="message-area">
+            <div id="winMessage" class="hidden">🎉 You win! 🎉<br><button id="nextLevelBtn">Next Level →</button></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // GAME STATE
+    let score = 0;
+    const GOAL = 10;
+    let gameActive = true;
+    let bounceInterval = null;
+    let windowWidth = 500;
+    let windowHeight = 500;
+
+
+    // Firefly position
+    let fireflyX = 200;
+    let fireflyY = 200;
+    let velocityX = 4;
+    let velocityY = 3;
+
+
+    // DOM elements
+    const gameArea = document.getElementById('gameArea');
+    const firefly = document.getElementById('firefly');
+    const scoreSpan = document.getElementById('score');
+    const goalSpan = document.getElementById('goal');
+    const winMessageDiv = document.getElementById('winMessage');
+    const nextBtn = document.getElementById('nextLevelBtn');
+
+
+    // Set goal display
+    goalSpan.innerText = GOAL;
+
+
+    // Get actual game area size (responsive)
+    function updateGameBounds() {
+        const rect = gameArea.getBoundingClientRect();
+        windowWidth = rect.width;
+        windowHeight = rect.height;
+        
+        // Clamp firefly position inside new bounds
+        fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 50);
+        fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 50);
+    }
+
+
+    // Move firefly with bouncing physics (random direction changes for "organic" feel)
+    function moveFirefly() {
+        if (!gameActive) return;
+        
+        // Update position
+        fireflyX += velocityX;
+        fireflyY += velocityY;
+        
+        // Bounce off walls (with boundary padding for the 50px orb)
+        if (fireflyX <= 0) {
+            fireflyX = 0;
+            velocityX = Math.abs(velocityX);
+            addRandomTwist();
+        }
+        if (fireflyX >= windowWidth - 50) {
+            fireflyX = windowWidth - 50;
+            velocityX = -Math.abs(velocityX);
+            addRandomTwist();
+        }
+        if (fireflyY <= 0) {
+            fireflyY = 0;
+            velocityY = Math.abs(velocityY);
+            addRandomTwist();
+        }
+        if (fireflyY >= windowHeight - 50) {
+            fireflyY = windowHeight - 50;
+            velocityY = -Math.abs(velocityY);
+            addRandomTwist();
+        }
+        
+        // Apply position to DOM
+        firefly.style.left = fireflyX + 'px';
+        firefly.style.top = fireflyY + 'px';
+    }
+    
+    // Slight random speed + direction changes to feel like a firefly
+    function addRandomTwist() {
+        if (!gameActive) return;
+        velocityX += (Math.random() - 0.5) * 1.2;
+        velocityY += (Math.random() - 0.5) * 1.2;
+        // Keep speed reasonable (between 2 and 7)
+        let speed = Math.hypot(velocityX, velocityY);
+        let maxSpeed = 7;
+        let minSpeed = 2.5;
+        if (speed > maxSpeed) {
+            velocityX = (velocityX / speed) * maxSpeed;
+            velocityY = (velocityY / speed) * maxSpeed;
+        } else if (speed < minSpeed) {
+            velocityX = (velocityX / speed) * minSpeed;
+            velocityY = (velocityY / speed) * minSpeed;
+        }
+    }
+
+
+    // Pop the firefly
+    function popFirefly(event) {
+        if (!gameActive) return;
+        event.stopPropagation();
+        
+        // Increment score
+        score++;
+        scoreSpan.innerText = score;
+        
+        // Tiny visual "pop" feedback
+        firefly.style.transform = 'scale(0.7)';
+        setTimeout(() => { firefly.style.transform = ''; }, 100);
+        
+        // Check for win
+        if (score >= GOAL) {
+            gameActive = false;
+            if (bounceInterval) clearInterval(bounceInterval);
+            winMessageDiv.classList.remove('hidden');
+            firefly.style.opacity = '0.5';
+            firefly.style.cursor = 'default';
+        } else {
+            // Teleport firefly to random spot on pop + boost speed
+            fireflyX = Math.random() * (windowWidth - 50);
+            fireflyY = Math.random() * (windowHeight - 50);
+            firefly.style.left = fireflyX + 'px';
+            firefly.style.top = fireflyY + 'px';
+            
+            // Give a little speed burst
+            velocityX += (Math.random() - 0.5) * 2;
+            velocityY += (Math.random() - 0.5) * 2;
+            addRandomTwist();
+        }
+    }
+    
+    // Reset Level 1 (can be used later)
+    function resetLevel1() {
+        score = 0;
+        gameActive = true;
+        scoreSpan.innerText = 0;
+        winMessageDiv.classList.add('hidden');
+        firefly.style.opacity = '1';
+        firefly.style.cursor = 'pointer';
+        
+        updateGameBounds();
+        fireflyX = Math.random() * (windowWidth - 50);
+        fireflyY = Math.random() * (windowHeight - 50);
+        firefly.style.left = fireflyX + 'px';
+        firefly.style.top = fireflyY + 'px';
+        
+        velocityX = (Math.random() - 0.5) * 5 + 3;
+        velocityY = (Math.random() - 0.5) * 5 + 3;
+        addRandomTwist();
+        
+        if (bounceInterval) clearInterval(bounceInterval);
+        bounceInterval = setInterval(() => {
+            moveFirefly();
+        }, 1000 / 30); // smooth 30fps movement
+    }
+    
+    // "Next Level" placeholder (for now)
+    function nextLevel() {
+        alert("✨ More levels coming soon! ✨\nButterflies, distractions, and silly 'hey!' sounds are next!");
+        resetLevel1();
+    }
+    
+    // Make sure click works even after resize
+    firefly.addEventListener('click', popFirefly);
+    nextBtn.addEventListener('click', nextLevel);
+    
+    // Handle window resize so firefly never gets stuck
+    window.addEventListener('resize', () => {
+        updateGameBounds();
+        fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 50);
+        fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 50);
+        firefly.style.left = fireflyX + 'px';
+        firefly.style.top = fireflyY + 'px';
+    });
+    
+    // INITIALIZE
+    updateGameBounds();
+    resetLevel1();
+</script>
+</body>
+</html>
