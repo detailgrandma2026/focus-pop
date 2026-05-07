@@ -38,7 +38,6 @@
             border: 1px solid #ffec9f88;
         }
 
-        /* TITLE STYLES */
         .game-header {
             text-align: center;
             margin-bottom: 20px;
@@ -97,6 +96,8 @@
             border-radius: 60px;
             color: #f9e7b3;
             font-weight: bold;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .score-box, .goal-box {
@@ -124,7 +125,6 @@
 
         .game-area {
             position: relative;
-            background-image: url('fatelf.png');
             background-size: cover;
             background-position: center;
             width: min(85vw, 85vh, 500px);
@@ -136,11 +136,22 @@
             margin-bottom: 20px;
         }
 
+        /* Level 1 & 2 background (fat elf) */
+        .game-area.bg-elf {
+            background-image: url('fatelf.png');
+        }
+
+        /* Level 3 & 4 background (forest) */
+        .game-area.bg-forest {
+            background-image: url('ff-forest.png');
+        }
+
         .game-area.flip-bg {
             transform: scaleX(-1);
         }
 
-        .game-area.flip-bg .firefly {
+        .game-area.flip-bg .firefly,
+        .game-area.flip-bg .butterfly {
             transform: scaleX(-1);
         }
 
@@ -155,6 +166,22 @@
             cursor: pointer;
             transition: transform 0.05s ease;
             will-change: left, top;
+            z-index: 10;
+        }
+
+        .butterfly {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: none;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            transition: transform 0.05s ease;
+            will-change: left, top;
+            z-index: 5;
+            pointer-events: auto;
         }
 
         .message-area {
@@ -199,7 +226,6 @@
 <body>
 <div class="game-container">
     <div class="game-panel">
-        <!-- TITLE ADDED HERE -->
         <div class="game-header">
             <h1 class="game-title">
                 <span class="firefly-icon">✨</span>
@@ -214,8 +240,9 @@
             <div class="goal-box"><span>🎯</span> 0 / <span id="goal">10</span></div>
             <div id="timerContainer" class="timer-box hidden">⏱️ <span id="timerDisplay">0</span> sec</div>
         </div>
-        <div id="gameArea" class="game-area">
+        <div id="gameArea" class="game-area bg-elf">
             <div id="firefly" class="firefly"></div>
+            <div id="butterfly" class="butterfly hidden"></div>
         </div>
         <div class="message-area">
             <div id="winMessage" class="hidden">🎉 You win! 🎉<br><button id="nextLevelBtn">Next Level →</button></div>
@@ -232,6 +259,7 @@
     let timerInterval = null;
     let gameActive = true;
     let bounceInterval = null;
+    let butterflyInterval = null;
     let windowWidth = 500;
     let windowHeight = 500;
 
@@ -241,19 +269,30 @@
     let velocityX = 4;
     let velocityY = 3;
 
+    // Butterfly position
+    let butterflyX = -100;
+    let butterflyY = -100;
+    let butterflyActive = false;
+
     // DOM elements
     const gameArea = document.getElementById('gameArea');
     const firefly = document.getElementById('firefly');
+    const butterfly = document.getElementById('butterfly');
     const scoreSpan = document.getElementById('score');
     const goalSpan = document.getElementById('goal');
     const winMessageDiv = document.getElementById('winMessage');
     const timerContainer = document.getElementById('timerContainer');
     const timerDisplaySpan = document.getElementById('timerDisplay');
 
-    // Firefly images (make sure these are uploaded to your repo)
+    // Sound effect (play on butterfly pop)
+    const heySound = new Audio('hey.mp3');
+
+    // Firefly images per level
     const fireflyImages = {
         1: 'orangeff.png',
-        2: 'greenff.png'
+        2: 'greenff.png',
+        3: 'pinkff.png',
+        4: 'ltpinkff.png'
     };
 
     function updateGameBounds() {
@@ -317,6 +356,56 @@
         }
     }
 
+    function spawnButterfly() {
+        if (!gameActive) return;
+        if (!butterflyActive) {
+            butterflyActive = true;
+            butterflyX = Math.random() * (windowWidth - 50);
+            butterflyY = -50;
+            butterfly.style.left = butterflyX + 'px';
+            butterfly.style.top = butterflyY + 'px';
+            butterfly.classList.remove('hidden');
+            
+            // Drift downward at an angle
+            let driftInterval = setInterval(() => {
+                if (!gameActive || !butterflyActive) {
+                    clearInterval(driftInterval);
+                    return;
+                }
+                butterflyY += 2;
+                butterflyX += (Math.random() - 0.5) * 4;
+                butterflyX = Math.min(Math.max(butterflyX, 0), windowWidth - 50);
+                butterfly.style.left = butterflyX + 'px';
+                butterfly.style.top = butterflyY + 'px';
+                
+                if (butterflyY > windowHeight) {
+                    butterflyActive = false;
+                    butterfly.classList.add('hidden');
+                    clearInterval(driftInterval);
+                    
+                    // Respawn after random delay (3-8 seconds)
+                    setTimeout(() => spawnButterfly(), Math.random() * 5000 + 3000);
+                }
+            }, 50);
+            
+            // Store interval to clean up on level reset
+            if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
+            window.butterflyDriftInterval = driftInterval;
+        }
+    }
+
+    function popButterfly(event) {
+        if (!gameActive) return;
+        event.stopPropagation();
+        heySound.play();
+        butterflyActive = false;
+        butterfly.classList.add('hidden');
+        if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
+        
+        // Respawn later
+        setTimeout(() => spawnButterfly(), Math.random() * 5000 + 3000);
+    }
+
     function popFirefly(event) {
         if (!gameActive) return;
         event.stopPropagation();
@@ -331,6 +420,9 @@
             gameActive = false;
             if (bounceInterval) clearInterval(bounceInterval);
             if (timerInterval) clearInterval(timerInterval);
+            if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
+            butterflyActive = false;
+            butterfly.classList.add('hidden');
             winMessageDiv.classList.remove('hidden');
             firefly.style.opacity = '0.5';
             firefly.style.cursor = 'default';
@@ -358,9 +450,11 @@
                 clearInterval(timerInterval);
                 gameActive = false;
                 if (bounceInterval) clearInterval(bounceInterval);
+                if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
                 winMessageDiv.innerHTML = '⏰ Time\'s up!<br><button id="resetBtn">Try Again</button>';
                 winMessageDiv.classList.remove('hidden');
                 firefly.style.opacity = '0.5';
+                butterfly.classList.add('hidden');
                 document.getElementById('resetBtn').addEventListener('click', () => resetLevel(currentLevel));
             } else {
                 timeLeft--;
@@ -375,27 +469,51 @@
         gameActive = true;
         scoreSpan.innerText = 0;
         
+        // Clean up butterfly
+        butterflyActive = false;
+        butterfly.classList.add('hidden');
+        if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
+        
         // Reset win message
         winMessageDiv.classList.add('hidden');
         winMessageDiv.innerHTML = '🎉 You win! 🎉<br><button id="nextLevelBtn">Next Level →</button>';
         firefly.style.opacity = '1';
         firefly.style.cursor = 'pointer';
         
+        // Level-specific setup
         if (currentLevel === 1) {
             goal = 10;
-            goalSpan.innerText = goal;
-            setFireflyImage(1);
+            gameArea.className = 'game-area bg-elf';
             gameArea.classList.remove('flip-bg');
+            setFireflyImage(1);
             if (timerInterval) clearInterval(timerInterval);
             timerContainer.classList.add('hidden');
         } else if (currentLevel === 2) {
             goal = 20;
-            goalSpan.innerText = goal;
-            setFireflyImage(2);
+            gameArea.className = 'game-area bg-elf';
             gameArea.classList.add('flip-bg');
+            setFireflyImage(2);
             startTimer(75);
+        } else if (currentLevel === 3) {
+            goal = 35;
+            gameArea.className = 'game-area bg-forest';
+            gameArea.classList.remove('flip-bg');
+            setFireflyImage(3);
+            if (timerInterval) clearInterval(timerInterval);
+            timerContainer.classList.add('hidden');
+            // Start butterfly distraction
+            setTimeout(() => spawnButterfly(), 2000);
+        } else if (currentLevel === 4) {
+            goal = 35;
+            gameArea.className = 'game-area bg-forest';
+            gameArea.classList.remove('flip-bg');
+            setFireflyImage(4);
+            startTimer(75);
+            // Start butterfly distraction
+            setTimeout(() => spawnButterfly(), 2000);
         }
         
+        goalSpan.innerText = goal;
         updateGameBounds();
         fireflyX = Math.random() * (windowWidth - 70);
         fireflyY = Math.random() * (windowHeight - 70);
@@ -417,10 +535,11 @@
             nextBtn.replaceWith(nextBtn.cloneNode(true));
             const newNextBtn = document.getElementById('nextLevelBtn');
             newNextBtn.addEventListener('click', () => {
-                if (currentLevel === 1) {
-                    resetLevel(2);
-                } else {
-                    alert('✨ More levels coming soon! ✨\nButterflies, distractions, and silly sounds are next!');
+                if (currentLevel === 1) resetLevel(2);
+                else if (currentLevel === 2) resetLevel(3);
+                else if (currentLevel === 3) resetLevel(4);
+                else {
+                    alert('✨ More levels coming soon! ✨\nYou beat all 4 levels! 🎉');
                     resetLevel(1);
                 }
             });
@@ -428,6 +547,7 @@
     }
     
     firefly.addEventListener('click', popFirefly);
+    butterfly.addEventListener('click', popButterfly);
     window.addEventListener('resize', () => {
         updateGameBounds();
         fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 70);
