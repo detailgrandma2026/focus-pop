@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13,7 +13,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-
         body {
             min-height: 100vh;
             background: linear-gradient(135deg, #1a4d2a, #0d2e1a);
@@ -24,14 +23,12 @@
             padding: 16px;
         }
 
-
         .game-container {
             background: rgba(0,0,0,0.2);
             border-radius: 48px;
             padding: 20px;
             backdrop-filter: blur(2px);
         }
-
 
         .game-panel {
             background: #2a6e3f;
@@ -41,6 +38,54 @@
             border: 1px solid #ffec9f88;
         }
 
+        /* TITLE STYLES */
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            font-family: 'Segoe UI', 'Quicksand', system-ui, sans-serif;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #FFD966;
+            text-shadow: 3px 3px 0 #2c4b1e;
+            animation: gentleBounce 2s ease-in-out infinite;
+            letter-spacing: 2px;
+        }
+
+        .firefly-icon {
+            display: inline-block;
+            animation: floatGlow 1.5s ease-in-out infinite;
+            font-size: 2rem;
+        }
+
+        .firefly-icon:first-child {
+            animation-delay: 0s;
+        }
+
+        .firefly-icon:last-child {
+            animation-delay: 0.75s;
+        }
+
+        .game-subtitle {
+            font-family: 'Segoe UI', 'Quicksand', system-ui, sans-serif;
+            font-size: 0.9rem;
+            color: #FFEC9F;
+            text-shadow: 1px 1px 0 #1e3b2a;
+            opacity: 0.9;
+            margin-top: -5px;
+        }
+
+        @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.8; text-shadow: 0 0 2px #ffea80; }
+            50% { transform: translateY(-3px) scale(1.1); opacity: 1; text-shadow: 0 0 12px #ffea80; }
+        }
 
         .stats {
             display: flex;
@@ -54,7 +99,6 @@
             font-weight: bold;
         }
 
-
         .score-box, .goal-box {
             background: #0f281b;
             padding: 8px 20px;
@@ -63,12 +107,10 @@
             box-shadow: inset 0 1px 3px #00000033, 0 2px 3px #ffffff22;
         }
 
-
         .score-box span, .goal-box span {
             font-size: 0.9rem;
             margin-right: 8px;
         }
-
 
         .timer-box {
             background: #0f281b;
@@ -79,7 +121,6 @@
             color: #f9e7b3;
             box-shadow: inset 0 1px 3px #00000033, 0 2px 3px #ffffff22;
         }
-
 
         .game-area {
             position: relative;
@@ -95,16 +136,13 @@
             margin-bottom: 20px;
         }
 
-
         .game-area.flip-bg {
             transform: scaleX(-1);
         }
 
-
         .game-area.flip-bg .firefly {
             transform: scaleX(-1);
         }
-
 
         .firefly {
             position: absolute;
@@ -119,12 +157,10 @@
             will-change: left, top;
         }
 
-
         .message-area {
             text-align: center;
             margin-top: 12px;
         }
-
 
         #winMessage {
             background: #ffd966cc;
@@ -135,7 +171,6 @@
             font-size: 1.3rem;
             color: #2c4b1e;
         }
-
 
         button {
             background: #ffcf4a;
@@ -151,12 +186,10 @@
             transition: 0.05s linear;
         }
 
-
         button:active {
             transform: translateY(2px);
             box-shadow: 0 2px 0 #b46f1a;
         }
-
 
         .hidden {
             display: none;
@@ -164,16 +197,18 @@
     </style>
 </head>
 <body>
-<div class="game-header">
-    <h1 class="game-title">
-        <span class="firefly-icon">✨</span>
-        Focus Pop
-        <span class="firefly-icon">✨</span>
-    </h1>
-    <p class="game-subtitle">pop the fireflies, don't get distracted!</p>
-</div>
-    <div class="game-container">
+<div class="game-container">
     <div class="game-panel">
+        <!-- TITLE ADDED HERE -->
+        <div class="game-header">
+            <h1 class="game-title">
+                <span class="firefly-icon">✨</span>
+                Focus Pop
+                <span class="firefly-icon">✨</span>
+            </h1>
+            <p class="game-subtitle">pop the fireflies, don't get distracted!</p>
+        </div>
+
         <div class="stats">
             <div class="score-box"><span>✨</span> <span id="score">0</span></div>
             <div class="goal-box"><span>🎯</span> 0 / <span id="goal">10</span></div>
@@ -188,7 +223,6 @@
     </div>
 </div>
 
-
 <script>
     // GAME STATE
     let currentLevel = 1;
@@ -201,13 +235,11 @@
     let windowWidth = 500;
     let windowHeight = 500;
 
-
     // Firefly position
     let fireflyX = 200;
     let fireflyY = 200;
     let velocityX = 4;
     let velocityY = 3;
-
 
     // DOM elements
     const gameArea = document.getElementById('gameArea');
@@ -218,13 +250,11 @@
     const timerContainer = document.getElementById('timerContainer');
     const timerDisplaySpan = document.getElementById('timerDisplay');
 
-
     // Firefly images (make sure these are uploaded to your repo)
     const fireflyImages = {
         1: 'orangeff.png',
         2: 'greenff.png'
     };
-
 
     function updateGameBounds() {
         const rect = gameArea.getBoundingClientRect();
@@ -234,14 +264,12 @@
         fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 70);
     }
 
-
     function setFireflyImage(level) {
         const imgName = fireflyImages[level];
         if (imgName) {
             firefly.style.backgroundImage = `url('${imgName}')`;
         }
     }
-
 
     function moveFirefly() {
         if (!gameActive) return;
@@ -288,7 +316,6 @@
             velocityY = (velocityY / speed) * minSpeed;
         }
     }
-
 
     function popFirefly(event) {
         if (!gameActive) return;
@@ -341,7 +368,6 @@
             }
         }, 1000);
     }
-
 
     function resetLevel(level) {
         currentLevel = level;
