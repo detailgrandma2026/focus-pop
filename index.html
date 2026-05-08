@@ -28,29 +28,27 @@
             font-size: 24px;
             cursor: pointer;
             z-index: 100;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-        .game-container { background: rgba(0,0,0,0.2); border-radius: 48px; padding: 20px; backdrop-filter: blur(2px); }
-        .game-panel { background: #2a6e3f; border-radius: 32px; padding: 20px; box-shadow: 0 20px 30px -10px rgba(0,0,0,0.4); border: 1px solid #ffec9f88; }
+        .game-container { background: rgba(0,0,0,0.2); border-radius: 48px; padding: 20px; }
+        .game-panel { background: #2a6e3f; border-radius: 32px; padding: 20px; border: 1px solid #ffec9f88; }
         .game-header { text-align: center; margin-bottom: 20px; }
-        .game-title { font-family: 'Segoe UI', 'Quicksand', system-ui, sans-serif; font-size: 2.2rem; font-weight: bold; color: #FFD966; text-shadow: 3px 3px 0 #2c4b1e; animation: gentleBounce 2s ease-in-out infinite; }
-        .firefly-icon { display: inline-block; animation: floatGlow 1.5s ease-in-out infinite; font-size: 2rem; }
-        .game-subtitle { font-family: 'Segoe UI', 'Quicksand', system-ui, sans-serif; font-size: 0.9rem; color: #FFEC9F; text-shadow: 1px 1px 0 #1e3b2a; margin-top: -5px; }
-        @keyframes gentleBounce { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
-        @keyframes floatGlow { 0%, 100% { transform: translateY(0px) scale(1); opacity: 0.8; } 50% { transform: translateY(-3px) scale(1.1); opacity: 1; } }
-        .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #1e3b2a; padding: 12px 20px; border-radius: 60px; color: #f9e7b3; font-weight: bold; flex-wrap: wrap; gap: 10px; }
-        .score-box, .goal-box, .timer-box { background: #0f281b; padding: 8px 20px; border-radius: 40px; font-size: 1.2rem; box-shadow: inset 0 1px 3px #00000033, 0 2px 3px #ffffff22; display: inline-flex; align-items: center; gap: 5px; }
-        .timer-box { font-size: 1.1rem; }
-        .game-area { position: relative; width: min(85vw, 85vh, 500px); height: min(85vw, 85vh, 500px); border-radius: 28px; overflow: hidden; cursor: crosshair; box-shadow: inset 0 0 0 3px #ffec9f, 0 10px 20px rgba(0,0,0,0.3); margin-bottom: 20px; }
-        .firefly { position: absolute; width: 90px; height: 90px; background-size: contain; background-repeat: no-repeat; background-position: center; cursor: pointer; z-index: 10; transition: transform 0.05s ease; }
-        .distraction { position: absolute; width: 90px; height: 90px; background-size: contain; background-repeat: no-repeat; background-position: center; cursor: pointer; z-index: 20; display: none; }
+        .game-title { font-size: 2rem; font-weight: bold; color: #FFD966; text-shadow: 3px 3px 0 #2c4b1e; animation: gentleBounce 2s infinite; }
+        .firefly-icon { display: inline-block; animation: floatGlow 1.5s infinite; font-size: 1.8rem; }
+        .game-subtitle { font-size: 0.8rem; color: #FFEC9F; margin-top: -5px; }
+        @keyframes gentleBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        @keyframes floatGlow { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-3px) scale(1.1)} }
+        .stats { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 20px; background: #1e3b2a; padding: 10px 15px; border-radius: 60px; flex-wrap: wrap; }
+        .score-box, .goal-box, .level-box, .timer-box { background: #0f281b; padding: 5px 12px; border-radius: 40px; font-size: 1rem; display: inline-flex; align-items: center; gap: 5px; }
+        .game-area { position: relative; width: min(85vw, 85vh, 450px); height: min(85vw, 85vh, 450px); border-radius: 28px; overflow: hidden; cursor: crosshair; box-shadow: inset 0 0 0 3px #ffec9f; margin-bottom: 20px; background-size: cover; background-position: center; }
+        .firefly { position: absolute; width: 80px; height: 80px; background-size: contain; background-repeat: no-repeat; background-position: center; cursor: pointer; z-index: 10; transition: transform 0.05s; }
+        .distraction { position: absolute; width: 80px; height: 80px; background-size: contain; background-repeat: no-repeat; background-position: center; cursor: pointer; z-index: 20; display: none; }
         .message-area { text-align: center; margin-top: 12px; }
-        #winMessage { background: #ffd966cc; backdrop-filter: blur(8px); padding: 12px; border-radius: 60px; font-weight: bold; font-size: 1.3rem; color: #2c4b1e; }
-        button { background: #ffcf4a; border: none; padding: 12px 24px; border-radius: 40px; font-size: 1.2rem; font-weight: bold; color: #2d4a1c; margin-top: 12px; cursor: pointer; box-shadow: 0 4px 0 #b46f1a; }
+        #winMessage { background: #ffd966cc; backdrop-filter: blur(8px); padding: 10px; border-radius: 60px; font-weight: bold; color: #2c4b1e; }
+        button { background: #ffcf4a; border: none; padding: 10px 20px; border-radius: 40px; font-weight: bold; cursor: pointer; }
         .hidden { display: none; }
-        .bg-elf { background-image: url('fatelf.png'); background-size: cover; background-position: center; }
-        .bg-forest { background-image: url('ff-forest.png'); background-size: cover; background-position: center; }
-        .bg-night { background-image: url('nightsky.png'); background-size: cover; background-position: center; }
+        .bg-elf { background-image: url('fatelf.png'); }
+        .bg-forest { background-image: url('ff-forest.png'); }
+        .bg-night { background-image: url('nightsky.png'); }
         .flip-bg { transform: scaleX(-1); }
         .flip-bg .firefly, .flip-bg .distraction { transform: scaleX(-1); }
     </style>
@@ -62,12 +60,13 @@
 <div class="game-container">
     <div class="game-panel">
         <div class="game-header">
-            <h1 class="game-title"><span class="firefly-icon">✨</span> Focus Pop <span class="firefly-icon">✨</span></h1>
+            <h1 class="game-title">✨ Focus Pop ✨</h1>
             <p class="game-subtitle">pop the fireflies, don't get distracted!</p>
         </div>
         <div class="stats">
-            <div class="score-box"><span>✨</span> <span id="score">0</span></div>
-            <div class="goal-box"><span>🎯</span> Goal <span id="goal">10</span></div>
+            <div class="score-box">✨ <span id="score">0</span></div>
+            <div class="goal-box">🎯 Goal <span id="goal">10</span></div>
+            <div class="level-box">🏆 Level <span id="levelNum">1</span></div>
             <div id="timerContainer" class="timer-box hidden">⏱️ <span id="timerDisplay">0</span> sec</div>
         </div>
         <div id="gameArea" class="game-area bg-elf">
@@ -86,7 +85,7 @@
 <script>
     let currentLevel = 1, score = 0, goal = 10, timeLeft = 0;
     let timerInterval = null, gameActive = true, bounceInterval = null;
-    let windowWidth = 500, windowHeight = 500;
+    let windowWidth = 450, windowHeight = 450;
     let fireflyX = 200, fireflyY = 200, velocityX = 4, velocityY = 3;
     let activeDistraction = null, distractionInterval = null, dragonflyLoop = null;
 
@@ -94,6 +93,7 @@
     const firefly = document.getElementById('firefly');
     const scoreSpan = document.getElementById('score');
     const goalSpan = document.getElementById('goal');
+    const levelSpan = document.getElementById('levelNum');
     const winMessageDiv = document.getElementById('winMessage');
     const timerContainer = document.getElementById('timerContainer');
     const timerDisplaySpan = document.getElementById('timerDisplay');
@@ -111,16 +111,16 @@
 
     const bgMusic = new Audio('boinggame.mp3');
     bgMusic.loop = true;
-    bgMusic.volume = 0.15;
+    bgMusic.volume = 0.1;
     let isMuted = false;
 
-    function startMusicOnTouch() {
+    function startMusic() {
         if (!isMuted && bgMusic.paused) bgMusic.play().catch(e=>console.log('Music:', e));
-        document.removeEventListener('click', startMusicOnTouch);
-        document.removeEventListener('touchstart', startMusicOnTouch);
+        document.removeEventListener('click', startMusic);
+        document.removeEventListener('touchstart', startMusic);
     }
-    document.addEventListener('click', startMusicOnTouch);
-    document.addEventListener('touchstart', startMusicOnTouch);
+    document.addEventListener('click', startMusic);
+    document.addEventListener('touchstart', startMusic);
 
     document.getElementById('muteBtn').addEventListener('click', (e) => {
         e.stopPropagation();
@@ -135,11 +135,12 @@
     };
 
     function setFireflyImage() { firefly.style.backgroundImage = `url('${fireflyImages[currentLevel]}')`; }
+    
     function updateBounds() {
         let rect = gameArea.getBoundingClientRect();
         windowWidth = rect.width; windowHeight = rect.height;
-        fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 90);
-        fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 90);
+        fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 80);
+        fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 80);
     }
 
     function twist() {
@@ -156,9 +157,9 @@
         if (!gameActive) return;
         fireflyX += velocityX; fireflyY += velocityY;
         if (fireflyX <= 0) { fireflyX = 0; velocityX = Math.abs(velocityX); twist(); }
-        if (fireflyX >= windowWidth - 90) { fireflyX = windowWidth - 90; velocityX = -Math.abs(velocityX); twist(); }
+        if (fireflyX >= windowWidth - 80) { fireflyX = windowWidth - 80; velocityX = -Math.abs(velocityX); twist(); }
         if (fireflyY <= 0) { fireflyY = 0; velocityY = Math.abs(velocityY); twist(); }
-        if (fireflyY >= windowHeight - 90) { fireflyY = windowHeight - 90; velocityY = -Math.abs(velocityY); twist(); }
+        if (fireflyY >= windowHeight - 80) { fireflyY = windowHeight - 80; velocityY = -Math.abs(velocityY); twist(); }
         firefly.style.left = fireflyX + 'px';
         firefly.style.top = fireflyY + 'px';
     }
@@ -187,8 +188,8 @@
         else if (type === 'mosquito') { el = mosquitoEl; sound = smackSound; }
         else { el = dragonflyEl; loopSound = swooshSound; }
         
-        let x = Math.random() * (windowWidth - 90);
-        let y = -90;
+        let x = Math.random() * (windowWidth - 80);
+        let y = -80;
         el.style.left = x + 'px';
         el.style.top = y + 'px';
         el.style.display = 'block';
@@ -209,7 +210,7 @@
             if (!gameActive || !activeDistraction) return;
             y += driftSpeed;
             x += (Math.random() - 0.5) * driftXRange;
-            x = Math.min(Math.max(x, 0), windowWidth - 90);
+            x = Math.min(Math.max(x, 0), windowWidth - 80);
             el.style.left = x + 'px';
             el.style.top = y + 'px';
             if (y > windowHeight) {
@@ -244,8 +245,8 @@
             winMessageDiv.classList.remove('hidden');
             firefly.style.opacity = '0.5';
         } else {
-            fireflyX = Math.random() * (windowWidth - 90);
-            fireflyY = Math.random() * (windowHeight - 90);
+            fireflyX = Math.random() * (windowWidth - 80);
+            fireflyY = Math.random() * (windowHeight - 80);
             firefly.style.left = fireflyX + 'px';
             firefly.style.top = fireflyY + 'px';
             velocityX += (Math.random() - 0.5) * 2;
@@ -282,6 +283,7 @@
         score = 0;
         gameActive = true;
         scoreSpan.innerText = 0;
+        levelSpan.innerText = level;
         stopDistraction();
         winMessageDiv.classList.add('hidden');
         winMessageDiv.innerHTML = '🎉 You win! 🎉<br><button id="nextLevelBtn">Next Level →</button>';
@@ -324,8 +326,8 @@
         
         goalSpan.innerText = goal;
         updateBounds();
-        fireflyX = Math.random() * (windowWidth - 90);
-        fireflyY = Math.random() * (windowHeight - 90);
+        fireflyX = Math.random() * (windowWidth - 80);
+        fireflyY = Math.random() * (windowHeight - 80);
         firefly.style.left = fireflyX + 'px';
         firefly.style.top = fireflyY + 'px';
         
