@@ -39,8 +39,8 @@
         @keyframes gentleBounce { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
         @keyframes floatGlow { 0%, 100% { transform: translateY(0px) scale(1); opacity: 0.8; } 50% { transform: translateY(-3px) scale(1.1); opacity: 1; } }
         .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #1e3b2a; padding: 12px 20px; border-radius: 60px; color: #f9e7b3; font-weight: bold; flex-wrap: wrap; gap: 10px; }
-        .score-box, .goal-box, .timer-box { background: #0f281b; padding: 8px 20px; border-radius: 40px; font-size: 1.5rem; box-shadow: inset 0 1px 3px #00000033, 0 2px 3px #ffffff22; }
-        .timer-box { font-size: 1.2rem; }
+        .score-box, .goal-box, .timer-box { background: #0f281b; padding: 8px 20px; border-radius: 40px; font-size: 1.2rem; box-shadow: inset 0 1px 3px #00000033, 0 2px 3px #ffffff22; display: inline-flex; align-items: center; gap: 5px; }
+        .timer-box { font-size: 1.1rem; }
         .game-area { position: relative; width: min(85vw, 85vh, 500px); height: min(85vw, 85vh, 500px); border-radius: 28px; overflow: hidden; cursor: crosshair; box-shadow: inset 0 0 0 3px #ffec9f, 0 10px 20px rgba(0,0,0,0.3); margin-bottom: 20px; }
         .firefly { position: absolute; width: 90px; height: 90px; background-size: contain; background-repeat: no-repeat; background-position: center; cursor: pointer; z-index: 10; transition: transform 0.05s ease; }
         .distraction { position: absolute; width: 90px; height: 90px; background-size: contain; background-repeat: no-repeat; background-position: center; cursor: pointer; z-index: 20; display: none; }
@@ -111,7 +111,7 @@
 
     const bgMusic = new Audio('boinggame.mp3');
     bgMusic.loop = true;
-    bgMusic.volume = 0.3;
+    bgMusic.volume = 0.15;
     let isMuted = false;
 
     function startMusicOnTouch() {
@@ -198,7 +198,8 @@
             loopSound.currentTime = 0;
             loopSound.play().catch(e=>console.log('loop error',e));
             dragonflyLoop = loopSound;
-        } else if (sound && (type === 'butterfly' || type === 'bee')) {
+        } else if (sound) {
+            sound.currentTime = 0;
             sound.play().catch(e=>console.log('sound error',e));
         }
         
@@ -220,7 +221,10 @@
 
     function popDistraction(el, sound) {
         if (!gameActive || !activeDistraction || activeDistraction.el !== el) return;
-        if (sound) sound.play().catch(e=>console.log('pop error',e));
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play().catch(e=>console.log('pop error',e));
+        }
         stopDistraction();
         setTimeout(() => spawnDistraction(), Math.random() * 5000 + 3000);
     }
@@ -287,7 +291,6 @@
         velocityX = speed + (Math.random() - 0.5) * 2;
         velocityY = speed + (Math.random() - 0.5) * 2;
         
-        // Set background and level properties
         if (currentLevel === 1) {
             goal = 10; gameArea.className = 'game-area bg-elf'; setFireflyImage();
             if (timerInterval) clearInterval(timerInterval);
