@@ -157,8 +157,8 @@
 
         .firefly {
             position: absolute;
-            width: 70px;
-            height: 70px;
+            width: 90px;
+            height: 90px;
             background: none;
             background-size: contain;
             background-repeat: no-repeat;
@@ -293,13 +293,12 @@
     };
 
     function updateGameBounds() {
-        const rect = gameArea.getBoundingClientRect();
-        windowWidth = rect.width;
-        windowHeight = rect.height;
-        fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 70);
-        fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 70);
-    }
-
+    const rect = gameArea.getBoundingClientRect();
+    windowWidth = rect.width;
+    windowHeight = rect.height;
+    fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 70);
+    fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 70);
+}
     function setFireflyImage(level) {
         const imgName = fireflyImages[level];
         if (imgName) {
