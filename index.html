@@ -136,12 +136,10 @@
             margin-bottom: 20px;
         }
 
-        /* Level 1 & 2 background (fat elf) */
         .game-area.bg-elf {
             background-image: url('fatelf.png');
         }
 
-        /* Level 3 & 4 background (forest) */
         .game-area.bg-forest {
             background-image: url('ff-forest.png');
         }
@@ -170,17 +168,18 @@
         }
 
         .butterfly {
-    position: absolute;
-    width: 90px;
-    height: 90px;
-    background-image: url('butterfly.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    cursor: pointer;
-    z-index: 20;
-    display: block;
-}
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            background-image: url('butterfly.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            z-index: 20;
+            display: block;
+        }
+
         .message-area {
             text-align: center;
             margin-top: 12px;
@@ -234,7 +233,7 @@
 
         <div class="stats">
             <div class="score-box"><span>✨</span> <span id="score">0</span></div>
-            <div class="goal-box"><span>🎯</span> 0 / <span id="goal">10</span></div>
+            <div class="goal-box"><span>🎯</span> Goal <span id="goal">10</span></div>
             <div id="timerContainer" class="timer-box hidden">⏱️ <span id="timerDisplay">0</span> sec</div>
         </div>
         <div id="gameArea" class="game-area bg-elf">
@@ -256,7 +255,6 @@
     let timerInterval = null;
     let gameActive = true;
     let bounceInterval = null;
-    let butterflyInterval = null;
     let windowWidth = 500;
     let windowHeight = 500;
 
@@ -270,6 +268,7 @@
     let butterflyX = -100;
     let butterflyY = -100;
     let butterflyActive = false;
+    let butterflyDriftInterval = null;
 
     // DOM elements
     const gameArea = document.getElementById('gameArea');
@@ -281,7 +280,7 @@
     const timerContainer = document.getElementById('timerContainer');
     const timerDisplaySpan = document.getElementById('timerDisplay');
 
-    // Sound effect (play on butterfly pop)
+    // Sound effect
     const heySound = new Audio('hey.mp3');
 
     // Firefly images per level
@@ -293,12 +292,13 @@
     };
 
     function updateGameBounds() {
-    const rect = gameArea.getBoundingClientRect();
-    windowWidth = rect.width;
-    windowHeight = rect.height;
-    fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 70);
-    fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 70);
-}
+        const rect = gameArea.getBoundingClientRect();
+        windowWidth = rect.width;
+        windowHeight = rect.height;
+        fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 90);
+        fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 90);
+    }
+
     function setFireflyImage(level) {
         const imgName = fireflyImages[level];
         if (imgName) {
@@ -316,8 +316,8 @@
             velocityX = Math.abs(velocityX);
             addRandomTwist();
         }
-        if (fireflyX >= windowWidth - 70) {
-            fireflyX = windowWidth - 70;
+        if (fireflyX >= windowWidth - 90) {
+            fireflyX = windowWidth - 90;
             velocityX = -Math.abs(velocityX);
             addRandomTwist();
         }
@@ -326,8 +326,8 @@
             velocityY = Math.abs(velocityY);
             addRandomTwist();
         }
-        if (fireflyY >= windowHeight - 70) {
-            fireflyY = windowHeight - 70;
+        if (fireflyY >= windowHeight - 90) {
+            fireflyY = windowHeight - 90;
             velocityY = -Math.abs(velocityY);
             addRandomTwist();
         }
@@ -356,37 +356,30 @@
         if (!gameActive) return;
         if (!butterflyActive) {
             butterflyActive = true;
-            butterflyX = Math.random() * (windowWidth - 50);
-            butterflyY = -50;
+            butterflyX = Math.random() * (windowWidth - 90);
+            butterflyY = -90;
             butterfly.style.left = butterflyX + 'px';
             butterfly.style.top = butterflyY + 'px';
             butterfly.classList.remove('hidden');
             
-            // Drift downward at an angle
-            let driftInterval = setInterval(() => {
+            butterflyDriftInterval = setInterval(() => {
                 if (!gameActive || !butterflyActive) {
-                    clearInterval(driftInterval);
+                    clearInterval(butterflyDriftInterval);
                     return;
                 }
                 butterflyY += 2;
                 butterflyX += (Math.random() - 0.5) * 4;
-                butterflyX = Math.min(Math.max(butterflyX, 0), windowWidth - 50);
+                butterflyX = Math.min(Math.max(butterflyX, 0), windowWidth - 90);
                 butterfly.style.left = butterflyX + 'px';
                 butterfly.style.top = butterflyY + 'px';
                 
                 if (butterflyY > windowHeight) {
                     butterflyActive = false;
                     butterfly.classList.add('hidden');
-                    clearInterval(driftInterval);
-                    
-                    // Respawn after random delay (3-8 seconds)
+                    clearInterval(butterflyDriftInterval);
                     setTimeout(() => spawnButterfly(), Math.random() * 5000 + 3000);
                 }
             }, 50);
-            
-            // Store interval to clean up on level reset
-            if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
-            window.butterflyDriftInterval = driftInterval;
         }
     }
 
@@ -396,9 +389,7 @@
         heySound.play();
         butterflyActive = false;
         butterfly.classList.add('hidden');
-        if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
-        
-        // Respawn later
+        if (butterflyDriftInterval) clearInterval(butterflyDriftInterval);
         setTimeout(() => spawnButterfly(), Math.random() * 5000 + 3000);
     }
 
@@ -416,15 +407,15 @@
             gameActive = false;
             if (bounceInterval) clearInterval(bounceInterval);
             if (timerInterval) clearInterval(timerInterval);
-            if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
+            if (butterflyDriftInterval) clearInterval(butterflyDriftInterval);
             butterflyActive = false;
             butterfly.classList.add('hidden');
             winMessageDiv.classList.remove('hidden');
             firefly.style.opacity = '0.5';
             firefly.style.cursor = 'default';
         } else {
-            fireflyX = Math.random() * (windowWidth - 70);
-            fireflyY = Math.random() * (windowHeight - 70);
+            fireflyX = Math.random() * (windowWidth - 90);
+            fireflyY = Math.random() * (windowHeight - 90);
             firefly.style.left = fireflyX + 'px';
             firefly.style.top = fireflyY + 'px';
             
@@ -446,7 +437,7 @@
                 clearInterval(timerInterval);
                 gameActive = false;
                 if (bounceInterval) clearInterval(bounceInterval);
-                if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
+                if (butterflyDriftInterval) clearInterval(butterflyDriftInterval);
                 winMessageDiv.innerHTML = '⏰ Time\'s up!<br><button id="resetBtn">Try Again</button>';
                 winMessageDiv.classList.remove('hidden');
                 firefly.style.opacity = '0.5';
@@ -468,7 +459,7 @@
         // Clean up butterfly
         butterflyActive = false;
         butterfly.classList.add('hidden');
-        if (window.butterflyDriftInterval) clearInterval(window.butterflyDriftInterval);
+        if (butterflyDriftInterval) clearInterval(butterflyDriftInterval);
         
         // Reset win message
         winMessageDiv.classList.add('hidden');
@@ -497,7 +488,6 @@
             setFireflyImage(3);
             if (timerInterval) clearInterval(timerInterval);
             timerContainer.classList.add('hidden');
-            // Start butterfly distraction
             setTimeout(() => spawnButterfly(), 2000);
         } else if (currentLevel === 4) {
             goal = 35;
@@ -505,14 +495,13 @@
             gameArea.classList.remove('flip-bg');
             setFireflyImage(4);
             startTimer(75);
-            // Start butterfly distraction
             setTimeout(() => spawnButterfly(), 2000);
         }
         
         goalSpan.innerText = goal;
         updateGameBounds();
-        fireflyX = Math.random() * (windowWidth - 70);
-        fireflyY = Math.random() * (windowHeight - 70);
+        fireflyX = Math.random() * (windowWidth - 90);
+        fireflyY = Math.random() * (windowHeight - 90);
         firefly.style.left = fireflyX + 'px';
         firefly.style.top = fireflyY + 'px';
         
@@ -546,8 +535,8 @@
     butterfly.addEventListener('click', popButterfly);
     window.addEventListener('resize', () => {
         updateGameBounds();
-        fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 70);
-        fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 70);
+        fireflyX = Math.min(Math.max(fireflyX, 0), windowWidth - 90);
+        fireflyY = Math.min(Math.max(fireflyY, 0), windowHeight - 90);
         firefly.style.left = fireflyX + 'px';
         firefly.style.top = fireflyY + 'px';
     });
