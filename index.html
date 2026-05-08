@@ -196,11 +196,25 @@
         .bg-night { background-image: url('nightsky.png'); }
         .flip-bg { transform: scaleX(-1); }
         .flip-bg .firefly, .flip-bg .distraction { transform: scaleX(-1); }
+        
+        .music-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.6);
+            color: #FFEC9F;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            pointer-events: none;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
 
 <button class="mute-btn" id="muteBtn">🔊</button>
+<div class="music-hint" id="musicHint">🎵 tap screen for music</div>
 
 <div class="game-container">
     <div class="game-panel">
@@ -261,6 +275,7 @@
     const winMessageDiv = document.getElementById('winMessage');
     const timerContainer = document.getElementById('timerContainer');
     const timerDisplaySpan = document.getElementById('timerDisplay');
+    const musicHint = document.getElementById('musicHint');
 
     const butterflyEl = document.getElementById('butterfly');
     const beeEl = document.getElementById('bee');
@@ -277,19 +292,29 @@
     // ========== MUSIC ==========
     const bgMusic = new Audio('boinggame.mp3');
     bgMusic.loop = true;
-    bgMusic.volume = 0.1;
+    bgMusic.volume = 0.12;
     let isMuted = false;
+    let musicStarted = false;
 
-    function startMusic() {
-        if (!isMuted && bgMusic.paused) {
-            bgMusic.play().catch(e => console.log('Music start:', e));
+    // Force music to play on any user interaction
+    function forcePlayMusic() {
+        if (!musicStarted && !isMuted) {
+            bgMusic.play().then(() => {
+                musicStarted = true;
+                if (musicHint) musicHint.style.opacity = '0';
+                console.log('Music started');
+            }).catch(e => {
+                console.log('Music need another tap:', e);
+            });
         }
-        document.removeEventListener('click', startMusic);
-        document.removeEventListener('touchstart', startMusic);
     }
-    document.addEventListener('click', startMusic);
-    document.addEventListener('touchstart', startMusic);
 
+    // Multiple event listeners to catch first tap
+    document.body.addEventListener('click', forcePlayMusic);
+    document.body.addEventListener('touchstart', forcePlayMusic);
+    document.body.addEventListener('keydown', forcePlayMusic);
+
+    // Mute button
     document.getElementById('muteBtn').addEventListener('click', (e) => {
         e.stopPropagation();
         isMuted = !isMuted;
@@ -297,7 +322,10 @@
             bgMusic.pause();
             document.getElementById('muteBtn').innerText = '🔇';
         } else {
-            bgMusic.play().catch(e => console.log('Music resume:', e));
+            bgMusic.play().then(() => {
+                musicStarted = true;
+                if (musicHint) musicHint.style.opacity = '0';
+            }).catch(e => console.log('Music resume error:', e));
             document.getElementById('muteBtn').innerText = '🔊';
         }
     });
@@ -516,12 +544,10 @@
         winMessageDiv.innerHTML = '🎉 You win! 🎉<br><button id="nextLevelBtn">Next Level →</button>';
         firefly.style.opacity = '1';
 
-        // Set speed
         const baseSpeed = (currentLevel === 7) ? 5.2 : 4;
         velocityX = baseSpeed + (Math.random() - 0.5) * 2;
         velocityY = baseSpeed + (Math.random() - 0.5) * 2;
 
-        // Level configuration
         if (currentLevel === 1) {
             goal = 10;
             gameArea.className = 'game-area bg-elf';
@@ -585,7 +611,6 @@
         if (bounceInterval) clearInterval(bounceInterval);
         bounceInterval = setInterval(() => moveFirefly(), 1000 / 30);
 
-        // Next level button
         const nextBtn = document.getElementById('nextLevelBtn');
         if (nextBtn) {
             const newBtn = nextBtn.cloneNode(true);
